@@ -1,4 +1,4 @@
-##CTS2 UMLS CUI to SNOMEDCT Map Service
+##CTS2 UMLS CUI to SNOMEDCT MapEntry Service
 
 A simple CTS2 MapEntry Service implementation to expose UMLS CUI to SNOMEDCT Mappings.
 
