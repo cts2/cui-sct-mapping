@@ -19,7 +19,7 @@ import datetime
 import argparse
 
 app = Flask(__name__)
-serverRoot = "http://localhost:8080"
+serverRoot = None
 
 cuiToCodes = defaultdict(set)
 
@@ -32,7 +32,7 @@ mapEntryXml = """<?xml version="1.0" encoding="UTF-8"?>
     xsi:schemaLocation="http://schema.omg.org/spec/CTS2/1.0/MapVersion http://www.omg.org/spec/cts2/201206/mapversion/MapVersion.xsd">
     <core:heading>
         <core:resourceRoot>map/UMLS_TO_SNOMEDCT/version/"""+UMLS_VERSION+"""/entry/{cui}</core:resourceRoot>
-        <core:resourceURI>"""+serverRoot+"""/map/UMLS_TO_SNOMEDCT/version/1.0/entry/{cui}</core:resourceURI>
+        <core:resourceURI>{serverRoot}/map/UMLS_TO_SNOMEDCT/version/1.0/entry/{cui}</core:resourceURI>
         <core:accessDate>{date}</core:accessDate>
     </core:heading>
     <entry entryState="ACTIVE" processingRule="ALL_MATCHES">
@@ -136,7 +136,7 @@ def get_map_entry_xml(cui):
     	targets += mapTargetXml.format(code=code,entryNum=entryNum)
     	entryNum += 1
 
-    return mapEntryXml.format(cui=cui, targets=targets, date=datetime.datetime.now().isoformat())
+    return mapEntryXml.format(cui=cui, targets=targets, serverRoot=serverRoot, date=datetime.datetime.now().isoformat())
 
 def load_file():
     '''Load the data file'''
@@ -177,7 +177,7 @@ def get_map_entry(cui):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', help='Server Port', type=int, default=5000, required=False)
-    parser.add_argument('-r', '--root', help='Server Root', required=False)
+    parser.add_argument('-r', '--root', help='Server Root', default="http://localhost:5000", required=True)
     args = parser.parse_args()
     port = args.port
     serverRoot = args.root
