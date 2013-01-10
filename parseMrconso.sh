@@ -12,5 +12,5 @@ echo "Cleaning data directory."
 rm -rf data
 mkdir data
 echo "Starting parse... this may take a few minutes."
-awk -F "|" '$12 == "SNOMEDCT"' $1 | cut -d "|" -f1,14 | sort | uniq > data/cuiToSnomedCodes.out
+awk -F "|" '$12 == "SNOMEDCT" && $17 != "O"' $1 | cut -d "|" -f1,14 | sort | uniq > data/cuiToSnomedCodes.out
 echo "Data parse successful."

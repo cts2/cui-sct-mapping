@@ -19,9 +19,11 @@ import datetime
 import argparse
 
 app = Flask(__name__)
-SERVER_ROOT = "http://informatics.mayo.edu/cts2/services/ecis/"
+serverRoot = "http://localhost:8080"
 
 cuiToCodes = defaultdict(set)
+
+UMLS_VERSION = "2012AA"
 
 mapEntryXml = """<?xml version="1.0" encoding="UTF-8"?>
 <MapEntryMsg xmlns="http://schema.omg.org/spec/CTS2/1.0/MapVersion"
@@ -29,13 +31,13 @@ mapEntryXml = """<?xml version="1.0" encoding="UTF-8"?>
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xsi:schemaLocation="http://schema.omg.org/spec/CTS2/1.0/MapVersion http://www.omg.org/spec/cts2/201206/mapversion/MapVersion.xsd">
     <core:heading>
-        <core:resourceRoot>map/UMLS_TO_SNOMEDCT/version/1.0/entry/{cui}</core:resourceRoot>
-        <core:resourceURI>"""+SERVER_ROOT+"""/map/UMLS_TO_SNOMEDCT/version/1.0/entry/{cui}</core:resourceURI>
+        <core:resourceRoot>map/UMLS_TO_SNOMEDCT/version/"""+UMLS_VERSION+"""/entry/{cui}</core:resourceRoot>
+        <core:resourceURI>"""+serverRoot+"""/map/UMLS_TO_SNOMEDCT/version/1.0/entry/{cui}</core:resourceURI>
         <core:accessDate>{date}</core:accessDate>
     </core:heading>
     <entry entryState="ACTIVE" processingRule="ALL_MATCHES">
         <assertedBy>
-            <core:mapVersion uri="http://umls.nlm.nih.gov/sab/MTH/version/MTH2012AA/map/UMLS_TO_SNOMEDCT_1.0">UMLS_TO_SNOMEDCT_1.0</core:mapVersion>
+            <core:mapVersion uri="http://umls.nlm.nih.gov/sab/MTH/version/MTH"""+UMLS_VERSION+"""/map/UMLS_TO_SNOMEDCT_"""+UMLS_VERSION+"""">UMLS_TO_SNOMEDCT_"""+UMLS_VERSION+"""</core:mapVersion>
             <core:map uri="http://umls.nlm.nih.gov/sab/MTH/map/UMLS_TO_SNOMEDCT">UMLS_TO_SNOMEDCT</core:map>
         </assertedBy>
         <mapFrom uri="http://umls.nlm.nih.gov/sab/MTH/{cui}">
@@ -149,7 +151,7 @@ def load_file():
         cuiToCodes[cui].add(code)
     file.close()
 
-@app.route("/map/UMLS_TO_SNOMEDCT/version/1.0/resolution")
+@app.route("/map/UMLS_TO_SNOMEDCT/version/"+UMLS_VERSION+"/resolution")
 def get_map_targetlistlist():
     '''Get a MapTargetListList based on a list of UMLS CUIs'''
     cuis = remove_duplicates(request.args['mapfrom'].split(','))
@@ -164,7 +166,7 @@ def remove_duplicates(lst):
     return [ l for l in lst if 
              l not in dset and not dset.add(l) ] 
 
-@app.route("/map/UMLS_TO_SNOMEDCT/version/1.0/entry/<cui>")
+@app.route("/map/UMLS_TO_SNOMEDCT/version/"+UMLS_VERSION+"/entry/<cui>")
 def get_map_entry(cui):
     '''Get a MapEntry based on a UMLS CUI'''
     try:
@@ -175,11 +177,13 @@ def get_map_entry(cui):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', help='Server Port', type=int, default=5000, required=False)
+    parser.add_argument('-r', '--root', help='Server Root', required=False)
     args = parser.parse_args()
     port = args.port
+    serverRoot = args.root
 
     print "Loading..."
     load_file()
     print "Done loading."
 
-    app.run(debug=True,host='0.0.0.0',port=port)
+    app.run(debug=False,host='0.0.0.0',port=port)
