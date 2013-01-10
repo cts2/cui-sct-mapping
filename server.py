@@ -32,7 +32,7 @@ mapEntryXml = """<?xml version="1.0" encoding="UTF-8"?>
     xsi:schemaLocation="http://schema.omg.org/spec/CTS2/1.0/MapVersion http://www.omg.org/spec/cts2/201206/mapversion/MapVersion.xsd">
     <core:heading>
         <core:resourceRoot>map/UMLS_TO_SNOMEDCT/version/"""+UMLS_VERSION+"""/entry/{cui}</core:resourceRoot>
-        <core:resourceURI>{serverRoot}/map/UMLS_TO_SNOMEDCT/version/1.0/entry/{cui}</core:resourceURI>
+        <core:resourceURI>{serverRoot}/map/UMLS_TO_SNOMEDCT/version/"""+UMLS_VERSION+"""/entry/{cui}</core:resourceURI>
         <core:accessDate>{date}</core:accessDate>
     </core:heading>
     <entry entryState="ACTIVE" processingRule="ALL_MATCHES">
