@@ -12,6 +12,7 @@ from flask import Flask
 from flask import jsonify
 from flask import Response
 from flask import request
+from flask import redirect
 from collections import defaultdict
 from collections import OrderedDict
 import string
@@ -107,7 +108,10 @@ class EntryNotFoundError(Exception):
 
 @app.errorhandler(404)
 def not_found(error):
-    xml = mapEntryNotFoundXml.format(cui=error.code)
+    return respond_not_found(error.code)
+
+def respond_not_found(code):
+    xml = mapEntryNotFoundXml.format(cui=code)
     return Response(xml, mimetype='text/xml'), 404
 
 def get_targetlistlist_xml(cuis):
@@ -154,12 +158,26 @@ def load_file():
 @app.route("/map/UMLS_TO_SNOMEDCT/version/"+UMLS_VERSION+"/resolution")
 def get_map_targetlistlist():
     '''Get a MapTargetListList based on a list of UMLS CUIs'''
-    cuis = remove_duplicates(request.args['mapfrom'].split(','))
+    cuis = cuiOrUrisToCuis(remove_duplicates(request.args['mapfrom'].split(',')))
     try:
         return Response(get_targetlistlist_xml(cuis), mimetype='text/xml') 
     except EntryNotFoundError as e:
         return not_found(e)
 
+def cuiOrUriToCui(cuiOrUri):
+    parts = cuiOrUri.rsplit('/',1)
+    if len(parts) == 1:
+        return parts[0]
+    else:
+        return parts[1]
+
+def cuiOrUrisToCuis(cuiOrUris):
+    cuis = []
+    for cuiOrUri in cuiOrUris:
+        cuis.append(cuiOrUriToCui(cuiOrUri))
+
+    return remove_duplicates(cuis)
+        
 def remove_duplicates(lst):
     dset = set()
     # relies on the fact that dset.add() always returns None.
@@ -173,6 +191,16 @@ def get_map_entry(cui):
     	return Response(get_map_entry_xml(cui), mimetype='text/xml')
     except EntryNotFoundError as e:
         return not_found(e)
+
+@app.route("/map/UMLS_TO_SNOMEDCT/version/"+UMLS_VERSION+"/entrybyuri")
+def get_map_entry_by_uri():
+    '''Get a MapEntry based on a UMLS CUI URI'''
+    uri = request.args['uri']
+    cui = cuiOrUriToCui(uri)
+    if not cui in cuiToCodes:
+        return respond_not_found(uri)
+
+    return redirect(serverRoot + "/map/UMLS_TO_SNOMEDCT/version/"+UMLS_VERSION+"/entry/"+cui, code=302)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
